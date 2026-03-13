@@ -55,10 +55,10 @@ def preprocess_image(image_path, target_size=(800, 800)):
 
 # Paths to input and output folders
 INPUT_DIR = "./Datasets/aptos2019-blindness-detection/train_images"
-OUTPUT_DIR = "./Datasets/aptos2019-blindness-detection/preprocessed_images"
+OUTPUT_DIR = "./PREPROCESSED_IMAGES"
 
 # Set sample size here (use None to process all images)
-SAMPLE_SIZE = None
+SAMPLE_SIZE = 5
 
 # Get all image files
 all_images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
