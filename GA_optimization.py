@@ -3,6 +3,7 @@ import random
 import os
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 import lightgbm as lgb
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 BASE = "./features"
 FEATURES_KEY = "features"
@@ -214,10 +215,13 @@ class lightgbm_GA_Optimizer:
     @staticmethod
     def decode(chromosome):
         params = {}
-        for i, (param, (low, high)) in enumerate(LIGHTGBM_PARAMS_RANGE.items()):
+        for i, (param, (low, high)) in enumerate(LIGHTGBM_PARAMS_RANGE.items()):     
             value = chromosome[i] * (high - low) + low  # Scale to the parameter range
             if param in INTEGER_PARAMS:
                 value = int(round(value))  # Round to nearest integer if it's an integer parameter
+                value = np.clip(value, low, high)  # Ensure the value is within the specified range
+            else:
+                value = float(np.clip(value, low, high))  # Ensure the value is within the specified range
             params[param] = value
         return params
 
@@ -304,8 +308,26 @@ def main():
     model.fit(X_train_selected, train_labels)
 
     for dataset, X, y in [("Validation", X_val_selected, val_labels), ("Test", X_test_selected, test_labels)]:
-        score = model.classification_report(y, model.predict(X))
-        print(f"{dataset} Classification Report:\n{score}")
+        # Evaluate the model's performance on the validation and test sets
+        y_pred = model.predict(X)
+
+        # Accuracy
+        accuracy = np.mean(y_pred == y)
+        print(f"{dataset} Accuracy: {accuracy:.4f}")
+       
+        # Precision
+        precision = precision_score(y, y_pred, average='weighted')
+        print(f"{dataset} Precision: {precision:.4f}")
+
+        # Recall
+        recall = recall_score(y, y_pred, average='weighted')
+        print(f"{dataset} Recall: {recall:.4f}")
+
+        # F1 Score
+        f1 = f1_score(y, y_pred, average='weighted')
+        print(f"{dataset} F1 Score: {f1:.4f}")
+        
+
 
 if __name__ == "__main__":
     main()
