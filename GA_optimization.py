@@ -11,7 +11,6 @@ LABELS_KEY   = "labels"
 
 
 def blended_crossover(parent1, parent2):
-    
     # calculate diffence between parents
     diff = np.abs(parent1 - parent2)
 
@@ -239,7 +238,7 @@ class lightgbm_GA_Optimizer:
         
         print(f"Error: {error:.4f} with params: {params}")
         
-        return self.ALPHA * (1 - error) - self.BETA * (sum(chromosome) / len(chromosome))
+        return self.ALPHA * (1 - error)
     
     def fit(self, X, y):
         n_params = len(LIGHTGBM_PARAMS_RANGE)
