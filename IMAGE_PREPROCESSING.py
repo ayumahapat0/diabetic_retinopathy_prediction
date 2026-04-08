@@ -58,7 +58,7 @@ INPUT_DIR = "./aptos2019-blindness-detection/train_images"
 OUTPUT_DIR = "./PREPROCESSED_IMAGES"
 
 # Set sample size here (use None to process all images)
-SAMPLE_SIZE = 50
+SAMPLE_SIZE = 1000
 
 # Get all image files
 all_images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
