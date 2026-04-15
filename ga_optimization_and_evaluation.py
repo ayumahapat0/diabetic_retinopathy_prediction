@@ -16,16 +16,29 @@ import warnings
 warnings.filterwarnings("ignore", message="X does not have valid feature names")
 warnings.filterwarnings("ignore", category=UserWarning, module="lightgbm")
 
+# ============================================================================
+# GA Optimization and Evaluation
+# ============================================================================
 
+# Random seed for reproducibility
 RANDOM_SEED = 42
 
-BASE_DIR     = "/Users/tanaymihani/PycharmProjects/PythonProject_CS5100_Diabetic_Rethinopathy"
+# Project directory
+BASE_DIR     = "."
+
+# Features directory
 FEATURES_DIR = os.path.join(BASE_DIR, "features")
+
+# Evalution Metrics and Plots directory 
 OUTPUT_DIR   = os.path.join(BASE_DIR, "results")
 
+# Features
 FEATURES_KEY = "features"
+
+# Labels
 LABELS_KEY   = "labels"
 
+# Feature Names
 FEATURE_NAMES = [
     "contrast_64", "dissimilarity_64", "homogeneity_64",
     "energy_64", "correlation_64", "ASM_64",
@@ -35,7 +48,7 @@ FEATURE_NAMES = [
     "GLCM_mean_128", "GLCM_var_128", "entropy_128",
 ]
 
-# LightGBM param ranges for GA to search over
+# LightGBM parameter ranges for GA to search over
 LIGHTGBM_PARAMS_RANGE = {
     "n_estimators"      : (50,   500),
     "max_depth"         : (3,    12),
@@ -52,13 +65,16 @@ LIGHTGBM_PARAMS_RANGE = {
     "bagging_fraction"  : (0.5,  1.0),
 }
 
+# Integer Hyperparameters
 INTEGER_PARAMS = {"n_estimators", "max_depth", "min_child_weight",
                   "num_leaves", "min_child_samples", "bagging_freq"}
 
 
 # json.dump chokes on numpy int64/float64, this handles it
 class NumpyEncoder(json.JSONEncoder):
+    
     def default(self, obj):
+        
         if isinstance(obj, np.integer): return int(obj)
         if isinstance(obj, np.floating): return float(obj)
         if isinstance(obj, np.ndarray): return obj.tolist()
@@ -66,11 +82,11 @@ class NumpyEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-
-# GA crossover, mutation, selection
-# BLX-alpha-beta crossover as per the reference paper
-
+"""
+Blended crossover utilizing randomized alpha and beta values (0, 1)
+"""
 def blended_crossover(parent1, parent2):
+
     diff = np.abs(parent1 - parent2)
     alpha, beta = np.random.rand(), np.random.rand()
     lo = np.minimum(parent1, parent2) - alpha * diff
@@ -79,28 +95,37 @@ def blended_crossover(parent1, parent2):
     child2 = np.clip(np.random.uniform(lo, hi), 0, 1)
     return child1, child2
 
-
+"""
+Mutation with 20% probability as default
+"""
 def mutation(offspring, rate=0.20):
+
     for i in range(len(offspring)):
         if random.random() < rate:
             offspring[i] = np.random.rand()
     return offspring
 
-
+"""
+Tournament Selection with k = 3 as default
+"""
 def tournament_selection(pop, fits, k=3):
     idx = random.sample(range(len(pop)), k)
     winner = idx[np.argmin(fits[idx])]
     return pop[winner]
 
-
+"""
+Evolve with elitist strategy of 1 as default
+"""
 def evolve(pop, fits, mut_rate=0.20, k=3, n_elites=1):
+
     new_pop = []
 
-    # keep the best ones
+    # Keep the best ones
     elite_idx = np.argsort(fits)[:n_elites]
     new_pop.extend(pop[elite_idx])
 
     while len(new_pop) < len(pop):
+
         p1 = tournament_selection(pop, fits, k)
         p2 = tournament_selection(pop, fits, k)
         c1, c2 = blended_crossover(p1, p2)
@@ -113,14 +138,22 @@ def evolve(pop, fits, mut_rate=0.20, k=3, n_elites=1):
     return np.array(new_pop)
 
 
-
+"""
+Genetic Algorithm Optimizer class for 
+feature selection and hyperparameter tuning
+"""
 class GA_Optimizer:
-    # paper used 0.6/0.4 but that was too aggressive on feature cutting
-    # bumped alpha to 0.8 so GA focuses more on accuracy
+    # Paper used 0.6/0.4 but that was too aggressive on feature cutting
+    # Bumped alpha to 0.8 so GA focuses more on accuracy
     ALPHA = 0.8
     BETA = 0.2
+    
+    # Minimum features to prevent overfitting (intuition based on paper)
     MIN_FEATURES = 3
 
+    """
+    Initialization
+    """
     def __init__(self, pop_size=100, epochs=100, mut_rate=0.2, k=3, cv=5):
         self.pop_size = pop_size
         self.epochs = epochs
@@ -132,11 +165,18 @@ class GA_Optimizer:
         self.best_score = None
         self.history = []
 
+    """
+    Feature Selection Decoding
+    [0, 0.5) = rejected features, [0.5, 1] = selected features
+    """
     def decode_features(self, chrom):
-        # [0, 0.5) = rejected, [0.5, 1] = selected
         return (chrom >= 0.5) & (chrom <= 1)
 
+    """
+    Hyparameter Decoding
+    """
     def decode_params(self, chrom):
+
         params = {}
         for i, (name, (lo, hi)) in enumerate(LIGHTGBM_PARAMS_RANGE.items()):
             val = chrom[i] * (hi - lo) + lo
@@ -147,8 +187,12 @@ class GA_Optimizer:
                 val = float(np.clip(val, lo, hi))
             params[name] = val
         return params
-
+    
+    """
+    Fitness score to evaluate feature selection and hyperparameter values
+    """
     def fitness(self, chrom, X, y):
+
         n_feat = X.shape[1]
         feat_mask = self.decode_features(chrom[:n_feat])
         X_sel = X[:, feat_mask]
@@ -167,7 +211,11 @@ class GA_Optimizer:
 
         return self.ALPHA * err + self.BETA * (feat_mask.sum() / n_feat)
 
+    """
+    Function for Feature Selection and Hyperparameter Tuning
+    """
     def fit(self, X, y):
+
         n_feat = X.shape[1]
         n_params = len(LIGHTGBM_PARAMS_RANGE)
         chrom_len = n_feat + n_params
@@ -222,13 +270,19 @@ class GA_Optimizer:
         self.best_score = best_fit
         return self
 
+    """
+    Get GA optimized model
+    """
     def get_model(self):
         return lgb.LGBMClassifier(random_state=RANDOM_SEED, force_col_wise=True,
                                   verbose=-1, **self.best_params)
 
 
-
+"""
+Load the data from the npz files
+"""
 def load_data():
+
     train = np.load(os.path.join(FEATURES_DIR, "train_features.npz"))
     val   = np.load(os.path.join(FEATURES_DIR, "val_features.npz"))
     test  = np.load(os.path.join(FEATURES_DIR, "test_features.npz"))
@@ -236,8 +290,11 @@ def load_data():
             val[FEATURES_KEY], val[LABELS_KEY],
             test[FEATURES_KEY], test[LABELS_KEY])
 
-
+"""
+Evaluate the model
+"""
 def eval_model(model, X, y, name):
+
     y_pred = model.predict(X)
     y_prob = model.predict_proba(X)[:, 1]
 
@@ -268,7 +325,11 @@ def eval_model(model, X, y, name):
 
 # Plotting
 
+"""
+Convergence Plot
+"""
 def save_convergence_plot(history, out_dir):
+
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(history)), history, 'b-', linewidth=2, marker='o', markersize=4)
     plt.xlabel("Epoch")
@@ -279,8 +340,11 @@ def save_convergence_plot(history, out_dir):
     plt.savefig(os.path.join(out_dir, "convergence_plot.png"), dpi=150)
     plt.close()
 
-
+"""
+ROC Plot
+"""
 def save_roc_plot(baseline_res, ga_res, out_dir):
+
     plt.figure(figsize=(8, 8))
     plt.plot(baseline_res["fpr"], baseline_res["tpr"], 'b-', linewidth=2,
              label=f'Baseline (AUC={baseline_res["roc_auc"]:.4f})')
@@ -296,8 +360,11 @@ def save_roc_plot(baseline_res, ga_res, out_dir):
     plt.savefig(os.path.join(out_dir, "roc_curve.png"), dpi=150)
     plt.close()
 
-
+"""
+Confusion Matrix Plot
+"""
 def save_confusion_plot(b_cm, ga_cm, n_sel, out_dir):
+
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     labels = ["Healthy (0)", "DR (1)"]
 
@@ -322,8 +389,11 @@ def save_confusion_plot(b_cm, ga_cm, n_sel, out_dir):
     plt.savefig(os.path.join(out_dir, "confusion_matrices.png"), dpi=150, bbox_inches="tight")
     plt.close()
 
-
+"""
+Feature Selection Plot
+"""
 def save_feature_plot(mask, names, out_dir):
+
     colors = ["#2ecc71" if s else "#e74c3c" for s in mask]
     display = [("+ " + n if s else "- " + n) for n, s in zip(names, mask)]
 
@@ -341,8 +411,11 @@ def save_feature_plot(mask, names, out_dir):
     plt.savefig(os.path.join(out_dir, "feature_selection.png"), dpi=150)
     plt.close()
 
-
+"""
+Baseline vs Optimized Evaluation Metrics Plot
+"""
 def save_comparison_plot(b_res, ga_res, n_sel, out_dir):
+
     metrics = ["accuracy", "precision", "recall", "f1", "roc_auc"]
     b_vals = [b_res[m] for m in metrics]
     g_vals = [ga_res[m] for m in metrics]
@@ -371,6 +444,7 @@ def save_comparison_plot(b_res, ga_res, n_sel, out_dir):
 
 
 def main():
+
     random.seed(RANDOM_SEED)
     np.random.seed(RANDOM_SEED)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -418,7 +492,7 @@ def main():
     print(f"\n[SAVED] GA model + state")
 
 
-    # which features survived
+    # Which features were selected
     selected = [FEATURE_NAMES[i] for i in range(len(FEATURE_NAMES)) if ga.selection_mask[i]]
     rejected = [FEATURE_NAMES[i] for i in range(len(FEATURE_NAMES)) if not ga.selection_mask[i]]
     n_sel = int(sum(ga.selection_mask))
@@ -432,20 +506,20 @@ def main():
     print(f"Reduction: {len(rejected)/len(FEATURE_NAMES)*100:.1f}%")
 
 
-    # best params found
+    # Best params found
     print(f"\nBest hyperparams:")
     for p, v in ga.best_params.items():
         print(f"  {p}: {v}")
     print(f"Best fitness: {ga.best_score:.4f}")
 
 
-    # convergence log
+    # Convergence log
     print(f"\nConvergence:")
     for i, f in enumerate(ga.history):
         print(f"  epoch {i}: {f:.4f}")
 
 
-    # comparison
+    # Comparison
     print(f"\nBaseline vs GA (test set):")
     print(f"  {'metric':<10} {'baseline':>10} {'GA':>10} {'diff':>10}")
     for m in ["accuracy", "precision", "recall", "f1", "roc_auc"]:
@@ -456,7 +530,7 @@ def main():
     print(f"  features:       18         {n_sel}")
 
 
-    # save all plots
+    # Save all plots
     print("\nSaving plots...")
     save_convergence_plot(ga.history, OUTPUT_DIR)
     save_roc_plot(b_test, ga_test, OUTPUT_DIR)
@@ -466,7 +540,7 @@ def main():
     print("Done.")
 
 
-    # dump everything to json so we don't lose numbers
+    # Dump everything to json so we don't lose numbers
     results = {
         "ga_config": {
             "pop_size": ga.pop_size, "epochs": ga.epochs,
@@ -491,3 +565,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
