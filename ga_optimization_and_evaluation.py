@@ -24,19 +24,19 @@ warnings.filterwarnings("ignore", category=UserWarning, module="lightgbm")
 RANDOM_SEED = 42
 
 # Project directory
-BASE_DIR     = "."
+BASE_DIR = "."
 
 # Features directory
 FEATURES_DIR = os.path.join(BASE_DIR, "features")
 
 # Evalution Metrics and Plots directory 
-OUTPUT_DIR   = os.path.join(BASE_DIR, "results")
+OUTPUT_DIR = os.path.join(BASE_DIR, "results")
 
 # Features
 FEATURES_KEY = "features"
 
 # Labels
-LABELS_KEY   = "labels"
+LABELS_KEY = "labels"
 
 # Feature Names
 FEATURE_NAMES = [
@@ -65,7 +65,7 @@ LIGHTGBM_PARAMS_RANGE = {
     "bagging_fraction"  : (0.5,  1.0),
 }
 
-# Integer Hyperparameters
+# LightGBM Integer parameters
 INTEGER_PARAMS = {"n_estimators", "max_depth", "min_child_weight",
                   "num_leaves", "min_child_samples", "bagging_freq"}
 
@@ -321,8 +321,6 @@ def eval_model(model, X, y, name):
         "fpr": fpr.tolist(), "tpr": tpr.tolist(),
     }
 
-
-
 # Plotting
 
 """
@@ -440,8 +438,6 @@ def save_comparison_plot(b_res, ga_res, n_sel, out_dir):
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, "metric_comparison.png"), dpi=150)
     plt.close()
-
-
 
 def main():
 
@@ -561,7 +557,6 @@ def main():
         json.dump(results, f, indent=2, cls=NumpyEncoder)
 
     print(f"\n[DONE] Results saved to {OUTPUT_DIR}/")
-
 
 if __name__ == "__main__":
     main()
