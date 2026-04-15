@@ -11,7 +11,7 @@ emoji: 🎨
 2. Splits the processed images into a training, validation, and testing split of 70%, 10%, and 20% respectively
 3. Extracts GLCM features from the each split
 4. Utilizes a Genetic algorithm for feature selection and lightgbm hyperparameter tuning
-5. Evaluate and compare the optimized model to a baseline model utilizing all GLCM features and no hyperparameter tuning 
+5. Evaluates and compares the optimized model to a baseline model utilizing all GLCM features and no hyperparameter tuning 
 through metrics and plots
 
 ---
@@ -58,7 +58,8 @@ git update-index --chmod=+x run_pipeline.sh
 git commit -m "message"
 ```
 
-Run these line code to see the execution permissions of all the files
+Run this line code to see the execution permissions of all the files
+
 064: unexecutable
 075: executable
 
