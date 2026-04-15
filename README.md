@@ -25,6 +25,8 @@ through metrics and plots
 git clone https://github.com/ayumahapat0/diabetic_retinopathy_prediction.git
 cd diabetic_reintopathy_prediction
 ```
+---
+
 ## Running Pipeline
 
 There are 2 ways to run this pipeline: utilizing the bash script or running each file one at a time
