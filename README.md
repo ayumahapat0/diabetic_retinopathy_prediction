@@ -31,6 +31,8 @@ cd diabetic_reintopathy_prediction
 
 There are 2 ways to run this pipeline: utilizing the bash script or running each file one at a time
 
+----
+
 ### Option 1: Bash Scipt
 
 The easiest way is to run the bash script
@@ -63,6 +65,7 @@ Run this line code to see the execution permissions of all the files
 ```bash
 git ls-files -s
 ```
+----
 
 ### Option 2: Run each file one at a time
 
