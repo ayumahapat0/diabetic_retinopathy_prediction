@@ -1,6 +1,7 @@
 import os
 import random
 import cv2
+import shutil
 
 # ============================================================================
 # IMAGE PREPROCESSING
@@ -16,7 +17,7 @@ OUTPUT_DIR = "./preprocessed_images"
 SAMPLE_SIZE = 1000
 
 """
-Remove background from images
+Removes background from images
 """
 def remove_background(image):
 
@@ -30,7 +31,7 @@ def remove_background(image):
     return image
 
 """
-Full preprocessing pipeline:
+Runs full preprocessing pipeline:
     1. Reading the image
     2. Removing the black background
     3. Applying CLAHE for histogram equalization
@@ -62,6 +63,13 @@ def preprocess_image(image_path, target_size=(800, 800)):
     return gray
 
 def main():
+
+    # Delete old preprocessed image files
+    try:
+        shutil.rmtree(OUTPUT_DIR)
+        print("Removed previously preprocessed images")
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))
 
     # Get all image files
     all_images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]

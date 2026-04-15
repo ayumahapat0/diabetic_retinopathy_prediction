@@ -2,30 +2,45 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from collections import Counter
 
+# ============================================================================
+# Data Splitting
+# ============================================================================
 
-
+# Random seed for reproducibility
 RANDOM_SEED = 42
-TEST_SIZE   = 0.20
-VAL_SIZE    = 0.125   # 12.5% of remaining 80% = 10% of total
-N_FOLDS     = 5
 
-BASE_DIR         = "/Users/tanaymihani/PycharmProjects/PythonProject_CS5100_Diabetic_Rethinopathy"
+# Testing set size
+TEST_SIZE = 0.20
+
+# Validation set size - 12.5% of remaining 80% = 10% of total
+VAL_SIZE = 0.125 
+
+# K Folds
+N_FOLDS = 5
+
+# Repo directory
+BASE_DIR         = "."
+
+# Training ids, labels
 CSV_PATH         = os.path.join(BASE_DIR, "aptos2019-blindness-detection", "train.csv")
-PREPROCESSED_DIR = os.path.join(BASE_DIR, "data", "preprocessed")
+
+# Preprocessed images
+PREPROCESSED_DIR = os.path.join(BASE_DIR, "preprocessed_images")
+
+# Output Directory
 OUTPUT_DIR       = os.path.join(BASE_DIR, "splits")
 
-
-
-
+"""
+Loads the Dataset
+"""
 def load_dataset(csv_path, preprocessed_dir):
+
     # Read labels from train.csv
     # APTOS has 5 severity classes (0-4), we convert to binary:
     #   0 → 0 (No DR)
     #   1,2,3,4 → 1 (DR)
     # We do this here so everything downstream works with binary labels
-
     df = pd.read_csv(csv_path)
 
     print(f"\n[INFO] Total records in CSV: {len(df)}")
@@ -54,14 +69,11 @@ def load_dataset(csv_path, preprocessed_dir):
 
     return image_paths, labels
 
-
-
-
+"""
+Splits the preprocessed images into training, validation, 
+and testing splits of 70%, 10%, and 20%
+"""
 def split_dataset(image_paths, labels):
-    # 70% train, 10% val, 20% test
-    # Using stratified splits to maintain class balance in each set
-    # Val set is separate from test because Ayush's GA needs it for
-    # fitness evaluation — using test for that would be data leakage
 
     labels_array = np.array(labels)
     paths_array  = np.array(image_paths)
@@ -94,12 +106,10 @@ def split_dataset(image_paths, labels):
         "test" : {"paths": X_test,  "labels": y_test},
     }
 
-
-# Cross Validation
-
+"""
+Gets 5-fold CV on training set only, just like original paper
+"""
 def get_cross_validation_folds(train_paths, train_labels):
-    # 5-fold CV on training set only, same as the paper
-    # Stratified so each fold has same class balance
 
     skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=RANDOM_SEED)
 
@@ -116,21 +126,17 @@ def get_cross_validation_folds(train_paths, train_labels):
     print("="*50)
     return skf, folds
 
-
-# Save Splits
-
+"""
+Saves splits as .npz files
+"""
 def save_splits(splits, output_dir):
-    # Save as .npz so Keith and Ayush can load exact same splits
-    # without re-running this script
+
     os.makedirs(output_dir, exist_ok=True)
 
     for split_name, data in splits.items():
         save_path = os.path.join(output_dir, f"{split_name}_split.npz")
         np.savez(save_path, paths=data["paths"], labels=data["labels"])
         print(f"[SAVED] {split_name} -> {save_path}")
-
-
-# Main
 
 def main():
     image_paths, labels = load_dataset(CSV_PATH, PREPROCESSED_DIR)
