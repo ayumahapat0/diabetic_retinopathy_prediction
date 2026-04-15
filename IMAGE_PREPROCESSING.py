@@ -6,8 +6,20 @@ import cv2
 # IMAGE PREPROCESSING
 # ============================================================================
 
-# Removing the black background from fundus image using contour detection
+# Input images
+INPUT_DIR = "./aptos2019-blindness-detection/train_images"
+
+# Output images directory
+OUTPUT_DIR = "./preprocessed_images"
+
+# Set sample size here (use None to process all images)
+SAMPLE_SIZE = 1000
+
+"""
+Remove background from images
+"""
 def remove_background(image):
+    
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -25,8 +37,8 @@ Full preprocessing pipeline:
     4. Resizing it to target_size
     5. Converting it to grayscale
 """
-
 def preprocess_image(image_path, target_size=(800, 800)):
+
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError(f"Could not read image: {image_path}")
@@ -49,44 +61,38 @@ def preprocess_image(image_path, target_size=(800, 800)):
 
     return gray
 
-# ============================================================================
-# RUNNING PREPROCESSING
-# ============================================================================
+def main():
 
-# Paths to input and output folders
-INPUT_DIR = "./aptos2019-blindness-detection/train_images"
-OUTPUT_DIR = "./PREPROCESSED_IMAGES"
+    # Get all image files
+    all_images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    total_images = len(all_images)
+    print(f"Found {total_images} images in '{INPUT_DIR}'.\n")
 
-# Set sample size here (use None to process all images)
-SAMPLE_SIZE = 1000
+    # Select images
+    if SAMPLE_SIZE is None or SAMPLE_SIZE >= total_images:
+        selected_images = all_images
+    else:
+        selected_images = random.sample(all_images, SAMPLE_SIZE)
 
-# Get all image files
-all_images = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-total_images = len(all_images)
-print(f"Found {total_images} images in '{INPUT_DIR}'.\n")
+    print(f"Processing {len(selected_images)} images...\n")
 
-# Select images
-if SAMPLE_SIZE is None or SAMPLE_SIZE >= total_images:
-    selected_images = all_images
-else:
-    selected_images = random.sample(all_images, SAMPLE_SIZE)
+    # Create output folder
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-print(f"Processing {len(selected_images)} images...\n")
+    # Run preprocessing
+    success = 0
+    for i, filename in enumerate(selected_images):
+        try:
+            preprocessed = preprocess_image(os.path.join(INPUT_DIR, filename))
+            cv2.imwrite(os.path.join(OUTPUT_DIR, filename), preprocessed)
+            success += 1
+        except Exception as e:
+            print(f"  Failed: {filename} — {e}")
 
-# Create output folder
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+        if (i + 1) % 10 == 0 or (i + 1) == len(selected_images):
+            print(f"  Progress: {i + 1}/{len(selected_images)}")
 
-# Run preprocessing
-success = 0
-for i, filename in enumerate(selected_images):
-    try:
-        preprocessed = preprocess_image(os.path.join(INPUT_DIR, filename))
-        cv2.imwrite(os.path.join(OUTPUT_DIR, filename), preprocessed)
-        success += 1
-    except Exception as e:
-        print(f"  Failed: {filename} — {e}")
+    print(f"\nDone! {success}/{len(selected_images)} images saved to '{OUTPUT_DIR}'")
 
-    if (i + 1) % 10 == 0 or (i + 1) == len(selected_images):
-        print(f"  Progress: {i + 1}/{len(selected_images)}")
-
-print(f"\nDone! {success}/{len(selected_images)} images saved to '{OUTPUT_DIR}'")
+if __name__ == "__main__":
+    main()
