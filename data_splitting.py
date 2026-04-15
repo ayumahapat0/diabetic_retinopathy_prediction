@@ -28,8 +28,8 @@ CSV_PATH         = os.path.join(BASE_DIR, "aptos2019-blindness-detection", "trai
 # Preprocessed images
 PREPROCESSED_DIR = os.path.join(BASE_DIR, "preprocessed_images")
 
-# Output Directory
-OUTPUT_DIR       = os.path.join(BASE_DIR, "splits")
+# Data splits Directory
+OUTPUT_DIR = os.path.join(BASE_DIR, "splits")
 
 """
 Loads the Dataset

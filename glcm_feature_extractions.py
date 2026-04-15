@@ -4,24 +4,36 @@ import cv2
 from skimage.feature import graycomatrix, graycoprops
 from skimage.measure import shannon_entropy
 
+# ============================================================================
+# GLCM Feature Extraction
+# ============================================================================
+
 # Two window sizes as per the paper (64x64 and 128x128)
 WINDOW_SIZES = [64, 128]
 
-# GLCM distances and angles — standard settings
+# Standard GLCM distances
 DISTANCES = [1]
+
+# Standard GLCM angles
 ANGLES    = [0, np.pi/4, np.pi/2, 3*np.pi/4]
 
+# Repo directory
 BASE_DIR = "."
+
+# Data splits directory
 SPLITS_DIR = os.path.join(BASE_DIR, "splits")
+
+# Features directory
 OUTPUT_DIR = os.path.join(BASE_DIR, "features")
 
-
-
+"""
+Extract GLCM features
+"""
 def extract_glcm_features(image, window_size):
+
     # Resizing the image to window size and extract Haralick features from GLCM
     # We average across all angles to get rotation-invariant features
     # 4 angles: 0, 45, 90, 135 degrees
-
     img_resized = cv2.resize(image, (window_size, window_size))
 
     # Normalizing to 64 gray levels to reduce GLCM matrix size
@@ -58,10 +70,11 @@ def extract_glcm_features(image, window_size):
 
     return np.array(features)
 
-
+"""
+Extracting features for all images at both window sizes
+Final feature vector per image = features at 64x64 + features at 128x128
+"""
 def extract_features_for_split(image_paths):
-    # Extracting features for all images at both window sizes
-    # Final feature vector per image = features at 64x64 + features at 128x128
 
     all_features = []
     total = len(image_paths)
@@ -88,8 +101,6 @@ def extract_features_for_split(image_paths):
 
     return np.array(all_features)
 
-
-
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -112,7 +123,6 @@ def main():
 
 
     print(f"Feature vector size per image: {len(WINDOW_SIZES) * 9} ({len(WINDOW_SIZES)} window sizes x 9 features)")
-
 
 if __name__ == "__main__":
     main()
