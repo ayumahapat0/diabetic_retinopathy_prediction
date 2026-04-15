@@ -9,7 +9,7 @@
 5. Evaluates and compares the optimized model to a baseline model utilizing all GLCM features and no hyperparameter tuning 
 through metrics and plots
 
---
+---
 
 ## 🚀 Getting Started
 
@@ -31,7 +31,7 @@ cd diabetic_reintopathy_prediction/
 
 There are 2 ways to run this pipeline: utilizing the bash script or running each file one at a time
 
-----
+---
 
 ### Option 1: Bash Scipt
 
@@ -65,7 +65,7 @@ Run this line code to see the execution permissions of all the files
 ```bash
 git ls-files -s
 ```
-----
+---
 
 ### Option 2: Run each file one at a time
 
@@ -119,5 +119,4 @@ You can the evaluation metrics and plots in the results folder
 ```bash
 cd results/
 ```
-
 ---
