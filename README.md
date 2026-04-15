@@ -1,8 +1,3 @@
----
-title: Diabetic Retinopathy Detection
-emoji: 🎨
----
-
 # Diabetic Retinopathy Detection
 
 ## 📋 What This Project Does
