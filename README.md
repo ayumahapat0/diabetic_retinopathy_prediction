@@ -23,7 +23,7 @@ through metrics and plots
 
 ```bash
 git clone https://github.com/ayumahapat0/diabetic_retinopathy_prediction.git
-cd diabetic_reintopathy_prediction/
+cd diabetic_retinopathy_prediction/
 ```
 ---
 
