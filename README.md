@@ -9,7 +9,7 @@
 5. Evaluates and compares the optimized model to a baseline model utilizing all GLCM features and no hyperparameter tuning 
 through metrics and plots
 
----
+--
 
 ## 🚀 Getting Started
 
@@ -23,7 +23,7 @@ through metrics and plots
 
 ```bash
 git clone https://github.com/ayumahapat0/diabetic_retinopathy_prediction.git
-cd diabetic_reintopathy_prediction
+cd diabetic_reintopathy_prediction/
 ```
 ---
 
@@ -111,10 +111,13 @@ python3 glcm_feature_extractions.py
 ```bash
 python3 ga_optimization_and_evaluation.py
 ```
+---
+## Results
 
-The results will be in the results fold
+You can the evaluation metrics and plots in the results folder
 
 ```bash
-cd results
+cd results/
 ```
+
 ---
