@@ -120,3 +120,10 @@ You can the evaluation metrics and plots in the results folder
 cd results/
 ```
 ---
+## Report
+
+You can find our report in the Final Report of this project in this repository
+
+---
+
+
