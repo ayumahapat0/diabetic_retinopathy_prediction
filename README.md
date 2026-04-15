@@ -120,9 +120,11 @@ You can the evaluation metrics and plots in the results folder
 cd results/
 ```
 ---
-## Report
+## Final Paper
 
-You can find our report in the Final Report of this project in this repository
+The Final Paper is called "Automated Diabetic Retinopathy Prediction Using Feature Based Machine Learning"
+
+It is in this github repository
 
 ---
 
