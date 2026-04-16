@@ -126,6 +126,8 @@ The Final Paper is called "Automated Diabetic Retinopathy Prediction Using Featu
 
 It is in this github repository
 
+The Kaggle Dataset is linked in the references section
+
 ---
 
 
